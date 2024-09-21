@@ -1,0 +1,17 @@
+version: "3.1"
+
+services:
+  postgres:
+    image: postgres
+    container_name: postgres_container
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Password123!
+      - POSTGRES_DB=banking_app
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    
+volumes:
+  pgdata:

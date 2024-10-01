@@ -1,14 +1,14 @@
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
-import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { AppModule } from './app.module';
 import { Logger } from 'nestjs-pino';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: process.env.SERVER_URL,
+    origin: process.env.CLIENT_URL,
     credentials: true,
     allowedHeaders: [
       'Accept',
@@ -19,26 +19,18 @@ async function bootstrap() {
     ],
     methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
   });
-  app.useLogger(app.get(Logger));
+
   app.use(cookieParser());
+  app.useLogger(app.get(Logger));
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      transform: true, // convert scalar types to their corresponding js types e.g stringDate to Date
-      exceptionFactory: (errors) => {
-        const formattedErrors = errors.reduce((accumulator, error) => {
-          accumulator[error.property] = Object.values(error.constraints).join(
-            ', ',
-          );
-          return accumulator;
-        }, {}); // displaying errors in a nicer way
-
-        throw new BadRequestException(formattedErrors);
-      },
+      transform: true, // transform incoming types to proper types
     }),
   );
 
   await app.listen(process.env.PORT);
-  console.log(`Server is running on port ${process.env.PORT}`);
 }
-bootstrap();
+bootstrap().then(() =>
+  console.log(`Server is running on port ${process.env.PORT}`),
+);

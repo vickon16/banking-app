@@ -2,6 +2,143 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Bank {
+  accessToken: String
+  accountId: String!
+  fundingSourceUrl: String
+  id: String!
+  shareableId: String
+  user: User
+  userId: String!
+}
+
+type BankAccount {
+  availableBalance: Float
+  bank: Bank
+  bankId: String!
+  currentBalance: Float
+  id: String!
+  institutionId: String!
+  mask: String
+  name: String!
+  officialName: String!
+  shareableId: String!
+  subType: String
+  type: String
+}
+
+type CreateLinkTokenResponse {
+  linkToken: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+input ExchangePublicTokenDto {
+  dwollaCustomerId: String!
+  publicToken: String!
+  userId: String!
+}
+
+type GetBankAccountFromPlaidResponse {
+  bankAccountFromPlaid: BankAccount!
+  transactions: [Transaction!]!
+}
+
+type GetBankAccountsFromPlaidResponse {
+  bankAccountsFromPlaid: [BankAccount!]!
+  totalBankAccounts: Float!
+  totalCurrentBalance: Float!
+}
+
+input LoginDto {
+  email: String!
+  password: String!
+}
+
+type Mutation {
+  createLinkToken: CreateLinkTokenResponse!
+  createTransferTransaction(createTransferTransactionInput: TransferTransactionDto!): String!
+  exchangePublicToken(exchangePublicTokenInput: ExchangePublicTokenDto!): String!
+  login(loginInput: LoginDto!): User!
+  logout: String!
+  register(registerInput: RegisterDto!): User!
+}
+
 type Query {
-  hello: String!
+  getBank(accountId: String!, bankId: String!): Bank!
+  getBankAccountFromPlaid(bankId: String!): GetBankAccountFromPlaidResponse!
+  getBankAccountsFromPlaid: GetBankAccountsFromPlaidResponse!
+  getBanks: [Bank!]!
+  getLoggedInUser: User
+}
+
+input RegisterDto {
+  address1: String!
+  city: String!
+  dateOfBirth: DateTime!
+  email: String!
+  firstName: String!
+  lastName: String!
+  password: String!
+  postalCode: Float!
+  ssn: Float!
+  state: String!
+}
+
+type Transaction {
+  accountId: String!
+  amount: Float!
+  category: String
+  createdAt: DateTime
+  id: String!
+  image: String
+  name: String!
+  paymentChannel: String!
+  pending: Boolean!
+  receiver: User
+  receiverBank: Bank
+  receiverBankId: String
+  receiverId: String
+  sender: User
+  senderBank: Bank
+  senderBankId: String
+  senderId: String
+  type: TransactionType!
+  updatedAt: DateTime
+}
+
+"""transaction type can either be debit or credit"""
+enum TransactionType {
+  credit
+  debit
+  none
+}
+
+input TransferTransactionDto {
+  amount: Float!
+  email: String!
+  name: String!
+  senderBankId: String!
+  shareableId: String!
+}
+
+type User {
+  address1: String
+  banks: [Bank!]
+  city: String
+  createdAt: DateTime
+  dateOfBirth: DateTime
+  dwollaCustomerId: String
+  dwollaCustomerUrl: String
+  email: String!
+  firstName: String!
+  id: String!
+  lastName: String!
+  postalCode: Float
+  ssn: Float
+  state: String
+  updatedAt: DateTime
 }

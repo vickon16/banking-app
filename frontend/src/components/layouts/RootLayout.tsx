@@ -1,5 +1,6 @@
-import { Inter, IBM_Plex_Serif } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { IBM_Plex_Serif, Inter } from "next/font/google";
+import Providers from "../providers";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const ibmPlexSerif = IBM_Plex_Serif({
@@ -19,8 +20,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <main className={cn(`${inter.className} ${ibmPlexSerif.variable}`)}>
-      {children}
-    </main>
+    <Providers>
+      <main className={cn(`${inter.className} ${ibmPlexSerif.variable}`)}>
+        {children}
+      </main>
+    </Providers>
   );
 }

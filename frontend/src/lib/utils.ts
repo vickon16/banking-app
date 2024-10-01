@@ -1,8 +1,11 @@
 /* eslint-disable no-prototype-builtins */
+import { Transaction } from "@/gql/graphql";
+import { AccountTypes, CategoryCount } from "@/types";
 import { type ClassValue, clsx } from "clsx";
+import { GraphQLError } from "graphql";
 import qs from "query-string";
+import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
-import { z } from "zod";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -107,18 +110,18 @@ export function getAccountTypeColors(type: AccountTypes) {
   switch (type) {
     case "depository":
       return {
-        bg: "bg-blue-25",
-        lightBg: "bg-blue-100",
-        title: "text-blue-900",
-        subText: "text-blue-700",
+        bg: "bg-primary/25",
+        lightBg: "bg-primary/10",
+        title: "text-primary/90",
+        subText: "text-primary/70",
       };
 
     case "credit":
       return {
-        bg: "bg-success-25",
-        lightBg: "bg-success-100",
-        title: "text-success-900",
-        subText: "text-success-700",
+        bg: "bg-emerald-25",
+        lightBg: "bg-emerald-100",
+        title: "text-emerald-900",
+        subText: "text-emerald-700",
       };
 
     default:
@@ -131,29 +134,26 @@ export function getAccountTypeColors(type: AccountTypes) {
   }
 }
 
-export function countTransactionCategories(
-  transactions: Transaction[]
-): CategoryCount[] {
+export function countTransactionCategories(transactions: Transaction[]) {
   const categoryCounts: { [category: string]: number } = {};
   let totalCount = 0;
 
   // Iterate over each transaction
-  transactions &&
-    transactions.forEach((transaction) => {
-      // Extract the category from the transaction
-      const category = transaction.category;
+  transactions.forEach((transaction) => {
+    // Extract the category from the transaction
+    const category = transaction.category as string;
 
-      // If the category exists in the categoryCounts object, increment its count
-      if (categoryCounts.hasOwnProperty(category)) {
-        categoryCounts[category]++;
-      } else {
-        // Otherwise, initialize the count to 1
-        categoryCounts[category] = 1;
-      }
+    // If the category exists in the categoryCounts object, increment its count
+    if (categoryCounts.hasOwnProperty(category)) {
+      categoryCounts[category]++;
+    } else {
+      // Otherwise, initialize the count to 1
+      categoryCounts[category] = 1;
+    }
 
-      // Increment total count
-      totalCount++;
-    });
+    // Increment total count
+    totalCount++;
+  });
 
   // Convert the categoryCounts object to an array of objects
   const aggregatedCategories: CategoryCount[] = Object.keys(categoryCounts).map(
@@ -180,14 +180,6 @@ export function extractCustomerIdFromUrl(url: string) {
   return customerId;
 }
 
-export function encryptId(id: string) {
-  return btoa(id);
-}
-
-export function decryptId(id: string) {
-  return atob(id);
-}
-
 export const getTransactionStatus = (date: Date) => {
   const today = new Date();
   const twoDaysAgo = new Date(today);
@@ -196,20 +188,11 @@ export const getTransactionStatus = (date: Date) => {
   return date > twoDaysAgo ? "Processing" : "Success";
 };
 
-export const authFormSchema = (type: string) =>
-  z.object({
-    // sign up
-    firstName: type === "sign-in" ? z.string().optional() : z.string().min(3),
-    lastName: type === "sign-in" ? z.string().optional() : z.string().min(3),
-    address1: type === "sign-in" ? z.string().optional() : z.string().max(50),
-    city: type === "sign-in" ? z.string().optional() : z.string().max(50),
-    state:
-      type === "sign-in" ? z.string().optional() : z.string().min(2).max(2),
-    postalCode:
-      type === "sign-in" ? z.string().optional() : z.string().min(3).max(6),
-    dateOfBirth: type === "sign-in" ? z.string().optional() : z.string().min(3),
-    ssn: type === "sign-in" ? z.string().optional() : z.string().min(3),
-    // both
-    email: z.string().email(),
-    password: z.string().min(8),
-  });
+export const handleErrors = (error: unknown) => {
+  if (error instanceof GraphQLError) {
+    return toast.error(error.message || error.originalError?.message);
+  } else if (error instanceof Error) {
+    return toast.error(error.message);
+  }
+  return toast.error("Something went wrong");
+};

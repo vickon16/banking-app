@@ -13,12 +13,67 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id             String   @id @default(uuid())
-  username       String
-  avatarUrl      String?
-  email          String   @unique
-  hashedPassword String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+model user {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  password          String
+  firstName         String
+  lastName          String
+  address1          String   @db.Text
+  city              String
+  state             String
+  postalCode        Int
+  dateOfBirth       DateTime
+  ssn               Int
+  dwollaCustomerUrl String
+  dwollaCustomerId  String
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  banks               bank[]
+  transactionSender   transaction[] @relation("sender")
+  transactionReceiver transaction[] @relation("receiver")
+}
+
+model bank {
+  id               String @id @default(uuid())
+  accountId        String
+  accessToken      String
+  fundingSourceUrl String
+  userId           String
+  user             user   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shareableId      String
+
+  senderBank   transaction[] @relation("senderBank")
+  receiverBank transaction[] @relation("receiverBank")
+}
+
+model transaction {
+  id             String          @id @default(uuid())
+  name           String
+  paymentChannel String
+  type           TransactionType @default(debit)
+  pending        Boolean
+  amount         Float
+  category       String
+  accountId      String
+  image          String?
+  senderId       String
+  sender         user            @relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId     String
+  receiver       user            @relation("receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  senderBankId   String
+  senderBank     bank   @relation("senderBank", fields: [senderBankId], references: [id], onDelete: Cascade)
+  receiverBankId String
+  receiverBank   bank   @relation("receiverBank", fields: [receiverBankId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum TransactionType {
+  none
+  debit
+  credit
 }
